@@ -1,0 +1,147 @@
+tables
+
+user = admin farmer company serviceprovider {Id Name/company name contact email(optional) address password typeOfUser}
+property = farmers can add the property details in it {property id , farmerid,locaion, type of land(bagayti or jirayati), img of land, img of 7/12 , areain acre,area in guntha}
+application = company can apply for the property {application id, company id, property id, status(accepted or not)}
+service = service provider can provide the service {service id, serviceprovider id, name , service name , price, description}
+service applications = provide the applications for the service {application id, service id, company id, status(accpetd/reject),iscomplete}
+contact = all the contact us informations {contact id, name, email(optional), Description}
+payment = 1000 registration fee up to register the farm with the farmer {payment id, service id/property id, payment method, payment mode, payment Status}
+governmentSchems = admin adds the farming related schems on the portal {scheme id, title, price, start date, last date, description}
+
+
+Here is the relationship between the tables based on the provided data model:
+
+---
+
+ 1. user Table (Admin, Farmer, Company, Service Provider)
+- Primary Key → Id
+- Relationships:
+  - property → One-to-Many (One Farmer can have multiple properties)
+  - application → One-to-Many (One Company can apply for multiple properties)
+  - service → One-to-Many (One Service Provider can offer multiple services)
+  - service_applications → One-to-Many (One Company can apply for multiple services)
+
+---
+
+ 2. property Table (Farmers can add their properties)
+- Primary Key → PropertyId
+- Foreign Key → FarmerId (References user(Id))
+- Relationships:
+  - user → Many-to-One (A property belongs to one Farmer)
+  - application → One-to-Many (One Property can receive multiple applications)
+  - payment → One-to-One (A property has one registration payment)
+
+---
+
+ 3. application Table (Companies apply for properties)
+- Primary Key → ApplicationId
+- Foreign Keys:
+  - CompanyId (References user(Id), Only Companies apply)
+  - PropertyId (References property(PropertyId))
+- Relationships:
+  - user → Many-to-One (A company can apply for multiple properties)
+  - property → Many-to-One (A property can have multiple company applications)
+
+---
+
+ 4. service Table (Services offered by service providers)
+- Primary Key → ServiceId
+- Foreign Key → ServiceProviderId (References user(Id))
+- Relationships:
+  - user → Many-to-One (One Service Provider offers multiple services)
+  - service_applications → One-to-Many (One Service can have multiple applications)
+
+---
+
+ 5. service_applications Table (Companies applying for services)
+- Primary Key → ApplicationId
+- Foreign Keys:
+  - ServiceId (References service(ServiceId))
+  - CompanyId (References user(Id), Only Companies apply)
+- Relationships:
+  - service → Many-to-One (One Service can have multiple applications)
+  - user → Many-to-One (A Company can apply for multiple services)
+
+---
+
+ 6. contact Table (User inquiries)
+- Primary Key → ContactId
+- No Foreign Keys
+- Relationships:
+  - Independent table for storing contact form submissions.
+
+---
+
+ 7. payment Table (Payments for property registration)
+- Primary Key → PaymentId
+- Foreign Keys:
+  - ServiceOrPropertyId (References either service(ServiceId) or property(PropertyId))
+- Relationships:
+  - property → One-to-One (A property has one registration fee payment)
+  - service → One-to-One (A service payment can be tracked)
+
+---
+
+ 8. governmentSchemes Table (Admin adds farming-related schemes)
+- Primary Key → SchemeId
+- No Foreign Keys
+- Relationships:
+  - Independent table where only Admin can add farming-related schemes.
+
+---
+
+ Entity-Relationship Diagram (Simplified)
+
+user (Id) 
+   ├──> property (PropertyId, FarmerId)
+   ├──> application (ApplicationId, CompanyId, PropertyId)
+   ├──> service (ServiceId, ServiceProviderId)
+   ├──> service_applications (ApplicationId, ServiceId, CompanyId)
+   └──> contact (ContactId)
+
+property (PropertyId, FarmerId)
+   ├──> application (ApplicationId, CompanyId, PropertyId)
+   └──> payment (PaymentId, ServiceOrPropertyId)
+
+service (ServiceId, ServiceProviderId)
+   ├──> service_applications (ApplicationId, ServiceId, CompanyId)
+   └──> payment (PaymentId, ServiceOrPropertyId)
+
+application (ApplicationId, CompanyId, PropertyId)
+   └──> Links company with property
+
+service_applications (ApplicationId, ServiceId, CompanyId)
+   └──> Links company with service
+
+payment (PaymentId, ServiceOrPropertyId)
+   └──> Links property and service with payment tracking
+
+governmentSchemes (SchemeId)
+   └──> Independent admin-managed table
+
+
+---
+ Summary of Relationships
+| Table | Related Tables | Relationship Type |
+|--------|---------------|------------------|
+| user | property | One-to-Many (One Farmer can have multiple properties) |
+| user | application | One-to-Many (One Company can apply for multiple properties) |
+| user | service | One-to-Many (One Service Provider can offer multiple services) |
+| user | service_applications | One-to-Many (One Company can apply for multiple services) |
+| property | application | One-to-Many (One Property can receive multiple applications) |
+| property | payment | One-to-One (A Property has one registration payment) |
+| service | service_applications | One-to-Many (One Service can have multiple applications) |
+| service | payment | One-to-One (A Service Payment can be tracked) |
+| application | user, property | Many-to-One (A Company applies for a Property) |
+| service_applications | user, service | Many-to-One (A Company applies for a Service) |
+| governmentSchemes | (Admin only) | Independent |
+
+---
+ Key Notes
+✔ Foreign keys ensure referential integrity.  
+✔ One-to-Many relationships define dependencies (e.g., One Farmer → Many Properties).  
+✔ Many-to-One relations prevent duplicate data while allowing scalability.  
+✔ Independent tables (contact, governmentSchemes) are managed separately.
+
+This design ensures efficient data handling for your collaborative farming system. 🚀
